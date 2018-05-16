@@ -75,9 +75,8 @@ export default {
     position: absolute;
     top: 20px;
     bottom: 20px;
-    left: 50%;
-    margin-left: -400px; 
-    width: 800px;
+    left: 10px;
+    right: 10px;
     border: 1px solid #d5d5d5;
     & .demo-item {
       height: 40px;

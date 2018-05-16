@@ -125,7 +125,7 @@ export default {
       this.infiniteComplete = false
     },
     handleScrollEvent () {
-      if (!this.infiniteComplete && !this.infiniteLoading && this.myScroll.maxScrollY > this.myScroll.y - this.distance) {
+      if (!this.infiniteComplete && !this.infiniteLoading && this.myScroll.directionY > 0 && this.myScroll.maxScrollY > this.myScroll.y - this.distance) {
         this.triggerLoadmore()
       } else if (this.pulldown && this.myScroll.y > 0) {
         this.triggerPulldownRefresh()
