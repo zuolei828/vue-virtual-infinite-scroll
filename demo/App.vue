@@ -3,7 +3,10 @@
     <virtual-list :items="items" :options="options" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
       <template slot="content" slot-scope="props">
         <div class="demo-item">
-          {{props.item.text}}
+          <img src="./assets/demo.jpeg" />
+          <span>
+            {{props.item.text}}
+          </span>
         </div>
       </template>
     </virtual-list>
@@ -81,6 +84,13 @@ export default {
     & .demo-item {
       height: 40px;
       line-height: 40px;
+      border-bottom: 1px solid #e3e3e3;
+      vertical-align: middle;
+      & img {
+        width: 30px;
+        height: 30px;
+        vertical-align: middle;
+      }
     }
   }
 </style>
