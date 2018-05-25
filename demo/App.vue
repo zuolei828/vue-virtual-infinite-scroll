@@ -74,7 +74,8 @@ export default {
         this.showScroller = true
         this.$nextTick(() => {
           this.items.splice(0)
-          for (let i = 0; i < 100; i++) {
+          let total = this.virtual ? 100 : 10000
+          for (let i = 0; i < total; i++) {
             this.items.push({
               text: i,
               id: i,
