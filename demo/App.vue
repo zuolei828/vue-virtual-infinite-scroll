@@ -5,8 +5,12 @@
         <input type="checkbox" @click="toggleVariable" />
         variable height
       </label>
+      <label>
+        <input type="checkbox" :checked="virtual" @click="toggleVirtual" />
+        virtual scroll 
+      </label>
     </div>
-    <div class="scroll-container" v-if="showScroller">
+    <div class="virtual-scroll-container" v-if="showScroller && virtual">
       <virtual-list ref="scroller" :items="items" :options="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
         <template slot="content" slot-scope="props">
           <div class="demo-item" :style="getStyle(props.item.height)">
@@ -17,6 +21,18 @@
           </div>
         </template>
       </virtual-list>
+    </div>
+    <div class="actual-scroll-container" v-if="showScroller && !virtual">
+      <ul>
+        <li v-for="item in items" :key="item.id">
+          <div class="demo-item" :style="getStyle(item.height)">
+            <span>
+              {{item.text}}
+            </span>
+            <img src="./assets/demo.jpeg" />
+          </div> 
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -35,6 +51,7 @@ export default {
         mouseWheelSpeed: 1
       },
       variable: false,
+      virtual: true,
       showScroller: true
     }
   },
@@ -65,6 +82,20 @@ export default {
             })
           }
         })
+      })
+    },
+    toggleVirtual () {
+      this.virtual = !this.virtual
+      this.$nextTick(() => {
+        this.items.splice(0)
+        let total = this.virtual ? 100 : 10000
+        for (let i = 0; i < total; i++) {
+          this.items.push({
+            text: i,
+            id: i,
+            height: Math.max(Math.floor(Math.random() * 50), 20)
+          })
+        }
       })
     },
     getStyle (height) {
@@ -121,13 +152,39 @@ export default {
       height: 40px;
       line-height: 40px;
     }
-    & .scroll-container {
+    & .virtual-scroll-container {
       position: absolute;
       top: 40px;
       bottom: 0px;
       left: 0px;
       right: 0px;
       border: 1px solid #d5d5d5;
+      & .demo-item {
+        padding-left: 20px;
+        height: 40px;
+        line-height: 40px;
+        border-bottom: 1px solid #e3e3e3;
+        vertical-align: middle;
+        & img {
+          margin-left: 10px;
+          height: 80%;
+          vertical-align: middle;
+        }
+      }
+    }
+    & .actual-scroll-container {
+      position: absolute;
+      top: 40px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      border: 1px solid #d5d5d5;
+      overflow: scroll;
+      & ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
       & .demo-item {
         padding-left: 20px;
         height: 40px;
