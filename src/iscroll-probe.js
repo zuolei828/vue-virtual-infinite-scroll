@@ -1862,8 +1862,9 @@ Indicator.prototype = {
 		newX = this.x + deltaX;
 		newY = this.y + deltaY;
 
+		this.scroller.directionX = deltaX > 0 ? 1 : deltaX < 0 ? -1 : 0;
+		this.scroller.directionY = deltaY > 0 ? 1 : deltaY < 0 ? -1 : 0;
 		this._pos(newX, newY);
-
 
 		if ( this.scroller.options.probeType == 1 && timestamp - this.startTime > 300 ) {
 			this.startTime = timestamp;
