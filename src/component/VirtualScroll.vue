@@ -35,6 +35,10 @@ export default {
     items: Array,
     infinite: Boolean,
     pulldown: Boolean,
+    variable: {
+      type: Boolean,
+      default: false
+    },
     distance: {
       type: Number,
       default: 50
@@ -53,7 +57,10 @@ export default {
       infiniteLoading: false,
       infiniteComplete: false,
       pullerTop: 0,
-      pullState: ''
+      pullState: '',
+      accumulator: 0,
+      oriItemLength: 0,
+      scrolledItem: null
     }
   },
   created () {
@@ -62,9 +69,7 @@ export default {
   },
   mounted () {
     this.$nextTick(() => {
-      this.myScroll = new IScroll('#wrapper', this.options)
-      this.initScrollView()
-      this.initEvents()
+      this.initScroller()
     })
   },
   computed: {
@@ -83,7 +88,7 @@ export default {
       }
     },
     getSpinnerStyle () {
-      let top = this.itemHeight * this.items.length
+      let top = this.variable ? this.accumulator : this.itemHeight * this.items.length
       return {
         transform: 'translate(0, ' + top + 'px)'
       }
@@ -104,14 +109,42 @@ export default {
     }
   },
   methods: {
+    generateItemAccumulator (init) {
+      if (!this.variable) return
+      if (init) {
+        this.accumulator = 0
+        this.items.forEach((item) => {
+          this.$set(item, '_top', this.accumulator)
+          this.accumulator += item.height
+        })
+      } else {
+        this.items.slice(this.oriItemLength).forEach((item) => {
+          this.$set(item, '_top', this.accumulator)
+          this.accumulator += item.height
+        })
+      }
+    },
+    initScroller () {
+      this.generateItemAccumulator(true)
+      this.myScroll = new IScroll('#wrapper', this.options)
+      this.initScrollView()
+      this.initEvents()
+    },
     initScrollView () {
       this.wrapperHeight = this.$el.clientHeight
       if (this.items.length === 0) return
-      this.itemHeight = this.$el.querySelector('.list-item').offsetHeight
-      this.poolLength = Math.ceil(this.wrapperHeight / this.itemHeight) + 2 * this.buffer
-      this.pool = this.items.slice(0, this.poolLength)
-      this.updateScrollView()
-      this.resetScroller()
+      if (!this.variable) {
+        this.itemHeight = this.$el.querySelector('.list-item').offsetHeight
+        this.poolLength = Math.ceil(this.wrapperHeight / this.itemHeight) + 2 * this.buffer
+        this.pool = this.items.slice(0, this.poolLength)
+        this.updateScrollView()
+        this.resetScroller()
+      } else {
+        let initSize = this.getScrolledIndex(this.wrapperHeight)
+        this.poolLength = initSize + 2 * this.buffer
+        this.pool = this.items.slice(0, this.poolLength)
+        this.resetScroller()
+      }
     },
     initEvents () {
       if (this.myScroll) {
@@ -120,9 +153,39 @@ export default {
         this.myScroll.on('pullDownEnd', this.handlePullDownEndEvent)
       }
     },
+    destroy () {
+      if (this.myScroll) {
+        this.myScroll.destroy()
+        this.myScroll = null
+      }
+    },
+    refresh () {
+      if (this.myScroll) {
+        this.destroy()
+        this.$nextTick(() => {
+          this.initScroller()
+        })
+      }
+    },
     resetParams () {
       this.infiniteLoading = false
       this.infiniteComplete = false
+    },
+    getScrolledIndex (target) {
+      let start = 0
+      let end = this.items.length - 1
+      while (start <= end) {
+        let mid = parseInt(start + (end - start) / 2)
+        let item = this.items[mid]
+        if (target >= item._top && target < item._top + item.height) {
+          return mid
+        } else if (target < item._top) {
+          end = mid - 1
+        } else {
+          start = mid + 1
+        }
+      }
+      return -1
     },
     handleScrollEvent () {
       if (!this.infiniteComplete && !this.infiniteLoading && this.myScroll.directionY > 0 && this.myScroll.maxScrollY > this.myScroll.y - this.distance) {
@@ -149,10 +212,11 @@ export default {
     triggerLoadmore () {
       this.isPulling = false
       this.infiniteLoading = true
+      this.oriItemLength = this.items.length
       this.$nextTick(() => {
         this.resetScroller(this.$el.querySelector('.infinite-loader').offsetHeight)
       })
-      this.$emit('loadMore', this.stateManager)
+      this.$emit('loadMore', this.infiniteStateManager)
     },
     triggerPulldownRefresh () {
       if (this.infiniteLoading || this.pullState === 'refresh' || this.pullState === 'complete') return
@@ -169,10 +233,11 @@ export default {
         this.myScroll.pullerHeight = this.pullerTop
       }
     },
-    stateManager (state) {
+    infiniteStateManager (state) {
       switch (state) {
         case 'loaded':
           this.infiniteLoading = false
+          this.generateItemAccumulator(false)
           this.$nextTick(() => {
             this.resetScroller()
             this.updateScrollView()
@@ -181,6 +246,7 @@ export default {
         case 'complete':
           this.infiniteLoading = false
           this.infiniteComplete = true
+          this.generateItemAccumulator(false)
           this.$nextTick(() => {
             this.resetScroller()
           })
@@ -191,6 +257,7 @@ export default {
       if (state === 'complete') {
         this.myScroll.pullerHeight = 0
         this.pullState = 'complete'
+        this.generateItemAccumulator(true)
         setTimeout(() => {
           this.resetScroller(null, 600)
           this.resetParams()
@@ -199,32 +266,61 @@ export default {
     },
     resetScroller (loaderHeight, time) {
       let h = loaderHeight || 0
-      this.myScroll.scrollerHeight = this.itemHeight * this.items.length + h
-      this.myScroll.maxScrollY = -this.itemHeight * this.items.length + this.wrapperHeight - h
+      if (!this.variable) {
+        this.myScroll.scrollerHeight = this.itemHeight * this.items.length + h
+        this.myScroll.maxScrollY = -this.itemHeight * this.items.length + this.wrapperHeight - h
+      } else {
+        this.myScroll.scrollerHeight = this.accumulator + h
+        this.myScroll.maxScrollY = this.wrapperHeight - this.accumulator - h
+      }
       this.myScroll.refresh(time)
     },
     updateScrollView () {
-      let scrolledLength = Math.max(Math.floor(-this.myScroll.y / this.itemHeight) - this.buffer, 0)
-      let majorPhase = Math.floor(scrolledLength / this.poolLength)
-      let majorLength = scrolledLength % this.poolLength
-      let i = 0
-      let top = 0
-      while (i < this.poolLength) {
-        top = majorPhase * this.poolLength * this.itemHeight + i * this.itemHeight
-        if (i < majorLength) {
-          top += this.itemHeight * this.poolLength
+      if (!this.variable) {
+        let scrolledLength = Math.max(Math.floor(-this.myScroll.y / this.itemHeight) - this.buffer, 0)
+        let majorPhase = Math.floor(scrolledLength / this.poolLength)
+        let majorLength = scrolledLength % this.poolLength
+        let i = 0
+        let top = 0
+        while (i < this.poolLength) {
+          top = majorPhase * this.poolLength * this.itemHeight + i * this.itemHeight
+          if (i < majorLength) {
+            top += this.itemHeight * this.poolLength
+          }
+          if (i < this.pool.length && this.pool[i]._top !== top) {
+            this.updateItem(i, top)
+          }
+          i++
         }
-        if (i < this.pool.length && this.pool[i]._top !== top) {
-          this.updateItem(i, top)
+      } else {
+        let scrolledIndex = this.getScrolledIndex(-this.myScroll.y)
+        let scrolledLength = Math.max(scrolledIndex - this.buffer, 0)
+        let majorPhase = Math.floor(scrolledLength / this.poolLength)
+        let majorLength = scrolledLength % this.poolLength
+        let i = 0
+        let newIndex = 0
+        while (i < this.poolLength) {
+          newIndex = majorPhase * this.poolLength + i
+          if (i < majorLength) {
+            newIndex += this.poolLength
+          }
+          if (newIndex < this.items.length && this.pool[i] !== this.items[newIndex]) {
+            this.updateItem(i, newIndex)
+          }
+          i++
         }
-        i++
       }
     },
     updateItem (i, top) {
-      let index = top / this.itemHeight
-      if (index < this.items.length) {
-        let item = this.items[index]
-        item._top = top
+      if (!this.variable) {
+        let index = top / this.itemHeight
+        if (index < this.items.length) {
+          let item = this.items[index]
+          item._top = top
+          this.$set(this.pool, i, item)
+        }
+      } else {
+        let item = this.items[top]
         this.$set(this.pool, i, item)
       }
     },
@@ -328,4 +424,3 @@ export default {
     }
   }
 </style>
-

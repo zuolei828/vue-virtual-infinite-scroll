@@ -1,15 +1,23 @@
 <template>
   <div class="demo">
-    <virtual-list :items="items" :options="options" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
-      <template slot="content" slot-scope="props">
-        <div class="demo-item">
-          <img src="./assets/demo.jpeg" />
-          <span>
-            {{props.item.text}}
-          </span>
-        </div>
-      </template>
-    </virtual-list>
+    <div class="tool-bar">
+      <label>
+        <input type="checkbox" @click="toggleVariable" />
+        variable height
+      </label>
+    </div>
+    <div class="scroll-container" v-if="showScroller">
+      <virtual-list ref="scroller" :items="items" :options="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
+        <template slot="content" slot-scope="props">
+          <div class="demo-item" :style="getStyle(props.item.height)">
+            <span>
+              {{props.item.text}}
+            </span>
+            <img src="./assets/demo.jpeg" />
+          </div>
+        </template>
+      </virtual-list>
+    </div>
   </div>
 </template>
 
@@ -25,7 +33,9 @@ export default {
         probeType: 3,
         mouseWheel: true,
         mouseWheelSpeed: 1
-      }
+      },
+      variable: false,
+      showScroller: true
     }
   },
   created () {
@@ -33,12 +43,39 @@ export default {
     for (let i = 0; i < 100; i++) {
       list.push({
         text: i,
-        id: i
+        id: i,
+        height: Math.max(Math.floor(Math.random() * 50), 20)
       })
     }
     this.items = list
   },
   methods: {
+    toggleVariable () {
+      this.showScroller = false
+      this.$nextTick(() => {
+        this.variable = !this.variable
+        this.showScroller = true
+        this.$nextTick(() => {
+          this.items.splice(0)
+          for (let i = 0; i < 100; i++) {
+            this.items.push({
+              text: i,
+              id: i,
+              height: Math.max(Math.floor(Math.random() * 50), 20)
+            })
+          }
+        })
+      })
+    },
+    getStyle (height) {
+      if (!this.variable) {
+        height = 40
+      }
+      return {
+        'height': height + 'px',
+        'line-height': height + 'px'
+      }
+    },
     getMoreData ($stateChange) {
       if (this.items.length > 1000) {
         $stateChange('complete')
@@ -48,7 +85,8 @@ export default {
           for (let i = length; i < length + 20; i++) {
             this.items.push({
               text: i,
-              id: i
+              id: i,
+              height: Math.max(Math.floor(Math.random() * 50), 20)
             })
           }
           $stateChange('loaded')
@@ -58,14 +96,13 @@ export default {
     refreshData ($pullStateChange) {
       setTimeout(() => {
         this.items.splice(0)
-        let list = []
         for (let i = 0; i < 50; i++) {
-          list.push({
+          this.items.push({
             text: i,
-            id: i
+            id: i,
+            height: Math.max(Math.floor(Math.random() * 50), 20)
           })
         }
-        this.items = this.items.concat(list)
         $pullStateChange('complete')
       }, 1500)
     }
@@ -80,16 +117,28 @@ export default {
     bottom: 20px;
     left: 10px;
     right: 10px;
-    border: 1px solid #d5d5d5;
-    & .demo-item {
+    & .tool-bar {
       height: 40px;
       line-height: 40px;
-      border-bottom: 1px solid #e3e3e3;
-      vertical-align: middle;
-      & img {
-        width: 30px;
-        height: 30px;
+    }
+    & .scroll-container {
+      position: absolute;
+      top: 40px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      border: 1px solid #d5d5d5;
+      & .demo-item {
+        padding-left: 20px;
+        height: 40px;
+        line-height: 40px;
+        border-bottom: 1px solid #e3e3e3;
         vertical-align: middle;
+        & img {
+          margin-left: 10px;
+          height: 80%;
+          vertical-align: middle;
+        }
       }
     }
   }
