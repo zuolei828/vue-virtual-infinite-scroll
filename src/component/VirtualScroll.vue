@@ -84,7 +84,8 @@ export default {
         'icon-pulldown': this.pullState === 'begin' || this.pullState === 'trigger',
         'icon-pullup': this.pullState === 'trigger',
         'spinner-default': this.pullState === 'refresh',
-        'icon-complete': this.pullState === 'complete'
+        'icon-complete': this.pullState === 'complete',
+        'icon-error': this.pullState === 'error'
       }
     },
     getSpinnerStyle () {
@@ -103,6 +104,8 @@ export default {
           return '更新中...'
         case 'complete':
           return '更新完成'
+        case 'error':
+          return '更新失败'
         default:
           return ''
       }
@@ -197,7 +200,7 @@ export default {
       }
     },
     handleScrollEndEvent () {
-      if (this.pullState === 'complete' || this.pullState === 'begin') {
+      if (this.pullState === 'complete' || this.pullState === 'error' || this.pullState === 'begin') {
         this.pullState = ''
         this.myScroll.pullState = ''
       }
@@ -219,7 +222,7 @@ export default {
       this.$emit('loadMore', this.infiniteStateManager)
     },
     triggerPulldownRefresh () {
-      if (this.infiniteLoading || this.pullState === 'refresh' || this.pullState === 'complete') return
+      if (this.infiniteLoading || this.pullState === 'refresh' || this.pullState === 'complete' || this.pullState === 'error') return
       if (!this.pullState || this.myScroll.y <= this.pullerTop) {
         this.pullState = 'begin'
         this.myScroll.pullerHeight = 0
@@ -243,6 +246,12 @@ export default {
             this.updateScrollView()
           })
           break
+        case 'error':
+          this.infiniteLoading = false
+          this.$nextTick(() => {
+            this.resetScroller()
+          })
+          break
         case 'complete':
           this.infiniteLoading = false
           this.infiniteComplete = true
@@ -258,6 +267,13 @@ export default {
         this.myScroll.pullerHeight = 0
         this.pullState = 'complete'
         this.generateItemAccumulator(true)
+        setTimeout(() => {
+          this.resetScroller(null, 600)
+          this.resetParams()
+        }, 500)
+      } else {
+        this.myScroll.pullerHeight = 0
+        this.pullState = 'error'
         setTimeout(() => {
           this.resetScroller(null, 600)
           this.resetParams()
@@ -358,7 +374,7 @@ export default {
         transform: rotate(0deg);
         transition: transform .3s;
       }
-      & .icon-complete {
+      & .icon-complete, & .icon-error {
         font-size: 23px;
       }
       & .text-default {
