@@ -15,7 +15,7 @@ const env = process.env.NODE_ENV === 'testing'
 
 const webpackConfig = merge(baseWebpackConfig, {
   entry: {
-    'vue-virtual-scroll': './src/index.js'
+    'vue-virtual-infinite-scroll': './src/index.js'
   },
   module: {
     rules: utils.styleLoaders({
@@ -27,7 +27,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     path: path.join(__dirname, '../dist'),
     filename: '[name].js',
     publicPath: '/',
-    library: 'VueVirtualScroll',
+    library: 'VueVirtualInfiniteScroll',
     libraryTarget: 'umd'
   },
   devtool: config.build.productionSourceMap ? config.build.devtool : false,
