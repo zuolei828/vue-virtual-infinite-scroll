@@ -4,6 +4,8 @@
   "description": "vue virtual infinite scroll",
   "author": "zuolei <zuolei828@aliyun.com>",
   "private": false,
+  "main": "dist/vue-virtual-infinite-scroll.js",
+  "license": "MIT",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/demo.dev.conf.js",
     "start": "npm run dev",
