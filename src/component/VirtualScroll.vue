@@ -32,7 +32,10 @@ import '../assets/icon/iconfont.css'
 export default {
   name: 'virtual-scroll',
   props: {
-    items: Array,
+    items: {
+      type: Array,
+      required: true
+    },
     infinite: Boolean,
     pulldown: Boolean,
     variable: {
@@ -44,7 +47,20 @@ export default {
       default: 50
     },
     bufferSize: [String, Number],
-    options: Object
+    iscrollOptions: {
+      type: Object,
+      default: () => {
+        return {
+          scrollbars: true,
+          interactiveScrollbars: true,
+          probeType: 3,
+          mouseWheel: true,
+          mouseWheelSpeed: 1
+        }
+      }
+    },
+    loadMore: Function,
+    pullRefresh: Function
   },
   data () {
     return {
@@ -129,7 +145,7 @@ export default {
     },
     initScroller () {
       this.generateItemAccumulator(true)
-      this.myScroll = new IScroll('#wrapper', this.options)
+      this.myScroll = new IScroll('#wrapper', this.iscrollOptions)
       this.initScrollView()
       this.initEvents()
     },
@@ -213,6 +229,7 @@ export default {
       }
     },
     triggerLoadmore () {
+      if (!this.infinite) return
       this.isPulling = false
       this.infiniteLoading = true
       this.oriItemLength = this.items.length
@@ -222,6 +239,7 @@ export default {
       this.$emit('loadMore', this.infiniteStateManager)
     },
     triggerPulldownRefresh () {
+      if (!this.pulldown) return
       if (this.infiniteLoading || this.pullState === 'refresh' || this.pullState === 'complete' || this.pullState === 'error') return
       if (!this.pullState || this.myScroll.y <= this.pullerTop) {
         this.pullState = 'begin'
