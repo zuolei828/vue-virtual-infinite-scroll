@@ -16,7 +16,7 @@
       </ul>
       <!-- the bottom infinite loader area -->
       <div class="infinite-loader" v-if="infinite" v-show="infiniteLoading" :style="getSpinnerStyle">
-        <slot name="loaderMore">
+        <slot name="infiniteLoader">
           <i class="spinner-default"></i>
           <span class="text-default">加载中...</span>
         </slot>
@@ -38,6 +38,18 @@ export default {
     },
     infinite: Boolean,
     pulldown: Boolean,
+    pulldownText: {
+      type: Object,
+      default: () => {
+        return {
+          begin: '下拉刷新',
+          trigger: '释放更新',
+          refresh: '更新中...',
+          complete: '更新完成',
+          error: '更新失败'
+        }
+      }
+    },
     variable: {
       type: Boolean,
       default: false
@@ -68,6 +80,7 @@ export default {
       wrapperHeight: 0,
       itemHeight: 0,
       buffer: 0,
+      itemsLength: 0,
       poolLength: 0,
       pool: [],
       infiniteLoading: false,
@@ -87,6 +100,14 @@ export default {
     this.$nextTick(() => {
       this.initScroller()
     })
+  },
+  watch: {
+    items (newArr, oldArr) {
+      if (this.pool.length < this.poolLength) {
+        let index = this.items.indexOf(this.pool[0])
+        this.pool = this.items.slice(index, this.poolLength)
+      }
+    }
   },
   computed: {
     getPullerStyle () {
@@ -111,20 +132,7 @@ export default {
       }
     },
     pullText () {
-      switch (this.pullState) {
-        case 'begin':
-          return '下拉刷新'
-        case 'trigger':
-          return '释放更新'
-        case 'refresh':
-          return '更新中...'
-        case 'complete':
-          return '更新完成'
-        case 'error':
-          return '更新失败'
-        default:
-          return ''
-      }
+      return this.pulldownText[this.pullState] || ''
     }
   },
   methods: {
@@ -152,6 +160,7 @@ export default {
     initScrollView () {
       this.wrapperHeight = this.$el.clientHeight
       if (this.items.length === 0) return
+      this.itemsLength = this.items.length
       if (!this.variable) {
         this.itemHeight = this.$el.querySelector('.list-item').offsetHeight
         this.poolLength = Math.ceil(this.wrapperHeight / this.itemHeight) + 2 * this.buffer
@@ -312,14 +321,14 @@ export default {
     updateScrollView () {
       if (!this.variable) {
         let scrolledLength = Math.max(Math.floor(-this.myScroll.y / this.itemHeight) - this.buffer, 0)
-        let majorPhase = Math.floor(scrolledLength / this.poolLength)
-        let majorLength = scrolledLength % this.poolLength
+        let majorPhase = Math.floor(scrolledLength / this.pool.length)
+        let majorLength = scrolledLength % this.pool.length
         let i = 0
         let top = 0
-        while (i < this.poolLength) {
-          top = majorPhase * this.poolLength * this.itemHeight + i * this.itemHeight
+        while (i < this.pool.length) {
+          top = majorPhase * this.pool.length * this.itemHeight + i * this.itemHeight
           if (i < majorLength) {
-            top += this.itemHeight * this.poolLength
+            top += this.itemHeight * this.pool.length
           }
           if (i < this.pool.length && this.pool[i]._top !== top) {
             this.updateItem(i, top)
@@ -329,14 +338,14 @@ export default {
       } else {
         let scrolledIndex = this.getScrolledIndex(-this.myScroll.y)
         let scrolledLength = Math.max(scrolledIndex - this.buffer, 0)
-        let majorPhase = Math.floor(scrolledLength / this.poolLength)
-        let majorLength = scrolledLength % this.poolLength
+        let majorPhase = Math.floor(scrolledLength / this.pool.length)
+        let majorLength = scrolledLength % this.pool.length
         let i = 0
         let newIndex = 0
-        while (i < this.poolLength) {
-          newIndex = majorPhase * this.poolLength + i
+        while (i < this.pool.length) {
+          newIndex = majorPhase * this.pool.length + i
           if (i < majorLength) {
-            newIndex += this.poolLength
+            newIndex += this.pool.length
           }
           if (newIndex < this.items.length && this.pool[i] !== this.items[newIndex]) {
             this.updateItem(i, newIndex)

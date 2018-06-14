@@ -65,16 +65,24 @@ export default {
 </script>
 ```
 
-## Configures
+## Prop Configures
 
-*Prop* | *Type* | *Required* | *Description* |
-:--- | :--- | :--- | :--- |
-| items | Array | ✓ | The list expected to render, each item in the list should contain id arrtibute for the unique identify, and in variable height mode, it should also contain height attribute with a string or number value. eg: [{ id: 1, height: 40 }, { id:2, height: 50 }] |
-| iscrollOptions | Object | * | The iscroll configure options. http://iscrolljs.com/#configuring |
-| variable | Boolean | * | Default value is false, to define the height mode of list item. If false, the component will get the item height automatically. If true, you should set the 'height' property to each item in the prop 'items'  |
-| bufferSize | Number | * | Default value is 5, define the top and bottom buffer item size. It is used to cache the scoll item out of the visable component area, the larger the bufferSize, the higher the scroll performance will achieved. |
-| infinite | Boolean | * | Default value is false, true means you want to use the loadMore function when the component scolled to the bottom  |
-| distance | Number | * | Default value is 50, the loadMore infinite function will be called when scrolled into the distance value from bottom  |
-| loadMore | Function | * | The custom function called when prop infinite is true and component scrolled into the distance value from bottom |
-| pulldown | Boolean | * | Default value is false, true means you want to use the pullRefresh function when the component pulled out of the top boundary |
-| pullRefesh | Function | * | The custom function called when prop pulldown is true and the component pulled out the top boundary and released |
+*Prop* | *Type* | *Required* | *Default* | *Description* |
+:--- | :--- | :--- | :--- | :--- |
+| items | Array | ✓ | [] |The list expected to render, each item in the list should contain id arrtibute for the unique identify, and in variable height mode, it should also contain height attribute with a string or number value. eg: [{ id: 1, height: 40 }, { id:2, height: 50 }] |
+| iscrollOptions | Object | * | {} | The iscroll configure options. http://iscrolljs.com/#configuring |
+| variable | Boolean | * | false | Define the height mode of list item. If false, the component will get the item height automatically. If true, you should set the 'height' property to each item in the prop 'items'  |
+| bufferSize | Number | * | 5 | Define the top and bottom buffer item size. It is used to cache the scoll item out of the visable component area, the larger the bufferSize, the higher the scroll performance will achieved. |
+| infinite | Boolean | * | false | True means you want to use the loadMore function when the component scolled to the bottom  |
+| distance | Number | * | 50 | The loadMore infinite function will be called when scrolled into the distance value from bottom  |
+| loadMore | Function | * | | The custom function called when prop infinite is true and component scrolled into the distance value from bottom |
+| pulldown | Boolean | * | false | True means you want to use the pullRefresh function when the component pulled out of the top boundary |
+| pullRefesh | Function | * | | The custom function called when prop pulldown is true and the component pulled out the top boundary and released |
+| pulldownText | Object | * | { begin: '下拉刷新',trigger: '释放更新',refresh: '更新中...',complete: '更新完成',error:'更新失败'} | The custom text object used to show in pull refresh |
+
+## Slot Configures
+
+*Slot* | *Description* |
+:--- |  :--- |
+| content | each list item content
+| infiniteLoader | the bottom infinite loader
