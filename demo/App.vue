@@ -13,7 +13,7 @@
     <div class="virtual-scroll-container" v-if="showScroller && virtual">
       <virtual-list ref="scroller" :items="items" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
         <template slot="content" slot-scope="props">
-          <div class="demo-item" :style="getStyle(props.item.height)">
+          <div class="demo-item" :style="getStyle(props.item.height)" @click="showItemContent(props.item)">
             <span>
               {{props.item.text}}
             </span>
@@ -137,6 +137,9 @@ export default {
         }
         $pullStateChange('complete')
       }, 1500)
+    },
+    showItemContent (item) {
+      console.log(item)
     }
   }
 }

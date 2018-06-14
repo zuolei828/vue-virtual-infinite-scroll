@@ -19,6 +19,13 @@ uncheck the virtual scroll means a normal big data list not use our component. I
 ```
 npm install vue-virtual-infinite-scroll --save
 ```
+
+```
+import virtualScroll from 'vue-virtual-infinite-scroll'
+import 'vue-virtual-infinite-scroll/dist/css/vue-virtual-infinite-scroll.css'
+
+Vue.component('virtual-list', virtualScroll)
+```
 ```vue
 <template>
     <div>
@@ -65,6 +72,10 @@ export default {
 </script>
 ```
 
+### Notice
+
+You should init the items array during your own component created function before the vue-virtual-infinite-scroll component created.
+
 ## Prop Configures
 
 *Prop* | *Type* | *Required* | *Default* | *Description* |
@@ -77,7 +88,7 @@ export default {
 | distance | Number | * | 50 | The loadMore infinite function will be called when scrolled into the distance value from bottom  |
 | loadMore | Function | * | | The custom function called when prop infinite is true and component scrolled into the distance value from bottom |
 | pulldown | Boolean | * | false | True means you want to use the pullRefresh function when the component pulled out of the top boundary |
-| pullRefesh | Function | * | | The custom function called when prop pulldown is true and the component pulled out the top boundary and released |
+| pullRefresh | Function | * | | The custom function called when prop pulldown is true and the component pulled out the top boundary and released |
 | pulldownText | Object | * | { begin: '下拉刷新',trigger: '释放更新',refresh: '更新中...',complete: '更新完成',error:'更新失败'} | The custom text object used to show in pull refresh |
 
 ## Slot Configures
