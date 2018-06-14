@@ -29,7 +29,7 @@ Vue.component('virtual-list', virtualScroll)
 ```vue
 <template>
     <div>
-      <virtual-list ref="scroller" :items="items" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
+      <virtual-list ref="scroller" :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
         <template slot="content" slot-scope="props">
           <div class="demo-item" :style="getStyle(props.item.height)">
             <span>
@@ -81,6 +81,7 @@ You should init the items array during your own component created function befor
 *Prop* | *Type* | *Required* | *Default* | *Description* |
 :--- | :--- | :--- | :--- | :--- |
 | items | Array | ✓ | [] |The list expected to render, each item in the list should contain id arrtibute for the unique identify, and in variable height mode, it should also contain height attribute with a string or number value. eg: [{ id: 1, height: 40 }, { id:2, height: 50 }] |
+| uniqueKey | String | ✓ | 'id' | The unique key for each list item |
 | iscrollOptions | Object | * | {} | The iscroll configure options. http://iscrolljs.com/#configuring |
 | variable | Boolean | * | false | Define the height mode of list item. If false, the component will get the item height automatically. If true, you should set the 'height' property to each item in the prop 'items'  |
 | bufferSize | Number | * | 5 | Define the top and bottom buffer item size. It is used to cache the scoll item out of the visable component area, the larger the bufferSize, the higher the scroll performance will achieved. |

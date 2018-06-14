@@ -10,7 +10,7 @@
       </div>
       <!-- the virtual scroll list area -->
       <ul class="scroll-list">
-        <li class="list-item" v-for="item in pool" :key="item.id" :style="getItemStyle(item)">
+        <li class="list-item" v-for="item in pool" :key="item[uniqueKey]" :style="getItemStyle(item)">
           <slot name="content" :item="item" />
         </li>
       </ul>
@@ -35,6 +35,11 @@ export default {
     items: {
       type: Array,
       required: true
+    },
+    uniqueKey: {
+      type: String,
+      required: true,
+      default: 'id'
     },
     infinite: Boolean,
     pulldown: Boolean,
