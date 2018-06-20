@@ -82,10 +82,10 @@ export default {
   data () {
     return {
       myScroll: null,
+      viewInited: false,
       wrapperHeight: 0,
       itemHeight: 0,
       buffer: 0,
-      itemsLength: 0,
       poolLength: 0,
       pool: [],
       infiniteLoading: false,
@@ -108,6 +108,13 @@ export default {
   },
   watch: {
     items (newArr, oldArr) {
+      if (!this.viewInited) {
+        this.pool = this.items.slice(0, this.buffer)
+        this.$nextTick(() => {
+          this.generateItemAccumulator(true)
+          this.initScrollView()
+        })
+      }
       if (this.pool.length < this.poolLength) {
         let index = this.items.indexOf(this.pool[0])
         this.pool = this.items.slice(index, this.poolLength)
@@ -165,7 +172,6 @@ export default {
     initScrollView () {
       this.wrapperHeight = this.$el.clientHeight
       if (this.items.length === 0) return
-      this.itemsLength = this.items.length
       if (!this.variable) {
         this.itemHeight = this.$el.querySelector('.list-item').offsetHeight
         this.poolLength = Math.ceil(this.wrapperHeight / this.itemHeight) + 2 * this.buffer
@@ -178,6 +184,7 @@ export default {
         this.pool = this.items.slice(0, this.poolLength)
         this.resetScroller()
       }
+      this.viewInited = true
     },
     initEvents () {
       if (this.myScroll) {

@@ -28,10 +28,10 @@ Vue.component('virtual-list', virtualScroll)
 ```
 ```vue
 <template>
-    <div>
+    <div class="demo">
       <virtual-list ref="scroller" :items="items" uniqueKey="id" :iscrollOptions="options" :variable="variable" :infinite="true" :pulldown="true" @loadMore="getMoreData" @pullRefresh="refreshData">
         <template slot="content" slot-scope="props">
-          <div class="demo-item" :style="getStyle(props.item.height)">
+          <div class="demo-item">
             <span>
               {{props.item.text}}
             </span>
@@ -68,13 +68,55 @@ export default {
       })
     }
     this.items = list
+  },
+  methods: {
+    getMoreData ($stateChange) {
+      if (this.items.length > 1000) {
+        $stateChange('complete')
+      } else {
+        setTimeout(() => {
+          let length = this.items.length
+          for (let i = length; i < length + 20; i++) {
+            this.items.push({
+              text: i,
+              id: i,
+              height: Math.max(Math.floor(Math.random() * 50), 20)
+            })
+          }
+          $stateChange('loaded')
+        }, 1500)
+      }
+    },
+    refreshData ($pullStateChange) {
+      setTimeout(() => {
+        this.items.splice(0)
+        for (let i = 0; i < 50; i++) {
+          this.items.push({
+            text: i,
+            id: i,
+            height: Math.max(Math.floor(Math.random() * 50), 20)
+          })
+        }
+        $pullStateChange('complete')
+      }, 1500)
+    },
   }
 </script>
+<style lang="postcss">
+  .demo {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 10px;
+    right: 10px;
+  }
+</style>
 ```
 
 ### Notice
 
-You should init the items array during your own component created function before the vue-virtual-infinite-scroll component created.
+1. You should init the items array during your own component created function before the vue-virtual-infinite-scroll component created.
+2. You should put the vue-virtual-infinite-scroll component during a parent component, and set a css position property(relative, absolute or fixed) to the parent component.
 
 ## Prop Configures
 
@@ -87,9 +129,9 @@ You should init the items array during your own component created function befor
 | bufferSize | Number | * | 5 | Define the top and bottom buffer item size. It is used to cache the scoll item out of the visable component area, the larger the bufferSize, the higher the scroll performance will achieved. |
 | infinite | Boolean | * | false | True means you want to use the loadMore function when the component scolled to the bottom  |
 | distance | Number | * | 50 | The loadMore infinite function will be called when scrolled into the distance value from bottom  |
-| loadMore | Function | * | | The custom function called when prop infinite is true and component scrolled into the distance value from bottom |
+| loadMore | Function | * | | The custom function called when prop infinite is true and component scrolled into the distance value from bottom. It has a callback param which can controll the loader state(see the How to use) |
 | pulldown | Boolean | * | false | True means you want to use the pullRefresh function when the component pulled out of the top boundary |
-| pullRefresh | Function | * | | The custom function called when prop pulldown is true and the component pulled out the top boundary and released |
+| pullRefresh | Function | * | | The custom function called when prop pulldown is true and the component pulled out the top boundary and released. It has a callback param which can controll the puller state(see the How to use) |
 | pulldownText | Object | * | { begin: '下拉刷新',trigger: '释放更新',refresh: '更新中...',complete: '更新完成',error:'更新失败'} | The custom text object used to show in pull refresh |
 
 ## Slot Configures
