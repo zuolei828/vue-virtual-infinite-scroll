@@ -18,7 +18,7 @@
       <div class="infinite-loader" v-if="infinite" v-show="infiniteLoading" :style="getSpinnerStyle">
         <slot name="infiniteLoader">
           <i class="spinner-default"></i>
-          <span class="text-default">加载中...</span>
+          <span class="text-default">{{infiniteText}}</span>
         </slot>
       </div>
     </div>
@@ -54,6 +54,10 @@ export default {
           error: '更新失败'
         }
       }
+    },
+    infiniteText: {
+      type: String,
+      default: '加载中...'
     },
     variable: {
       type: Boolean,
